@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  db:
+    container_name: db
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=django
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=dev
+    volumes:
+      - ./backend/postgres-data:/var/lib/postgresql/data
+  backend:
+    container_name: backend
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+

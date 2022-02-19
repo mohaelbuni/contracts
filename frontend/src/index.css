@@ -1,0 +1,30 @@
+main{
+  min-height:80vh;
+}
+body{
+  background-color:#F3F6F9;
+}
+
+.nav-bar-color{
+  background-color:#5F452A;
+}
+.navbar {
+ 
+  text-transform: unset;
+
+}
+th {
+
+  text-transform: unset;
+}
+.btn {
+
+  text-transform: unset;
+}
+a {
+
+  text-decoration:none;
+}
+.action-btn{
+  border-radius: 30%;
+}
