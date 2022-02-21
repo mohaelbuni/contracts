@@ -1,27 +1,19 @@
-import React, { useState } from "react";
-// import { useHistory } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import Pagination from "../components/Pagination";
 import { useNavigate } from "react-router-dom";
+import Table from "../components/Table";
 import { useSelector } from "react-redux";
 import Aux from "../hoc/_Aux/index";
 import axios from "axios";
-import {
-  Card,
-  Button,
-  Row,
-  Col,
-  Table,
-  Badge,
-  Modal,
-  Form,
-} from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Card, Button, Row, Col, Modal, Form } from "react-bootstrap";
+
 function ContractScreen() {
   const [show, setShow] = useState(false);
-
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const history = useNavigate();
+  const navigate = useNavigate();
+
   const initialFormData = Object.freeze({
     title: "",
     contract_number: "",
@@ -42,13 +34,22 @@ function ContractScreen() {
     department: [],
   });
 
-
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
-  
-
   const [formData, updateFormData] = useState(initialFormData);
-  const [uploadImage,setUploadImage] = useState(null)
+  const [uploadImage, setUploadImage] = useState(null);
+  const [data, setData] = useState([]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dataPerPage] = useState(10);
+
+  useEffect(() => {
+    async function fetchBranches() {
+      const { data } = await axios.get("/contracts/up-data/");
+      setData(data);
+    }
+    fetchBranches();
+  }, []);
 
   const handleChange = (e) => {
     if ([e.target.name] == "image") {
@@ -71,32 +72,49 @@ function ContractScreen() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let data = new FormData();
-    data.append("title", formData.title );
-    data.append("contract_number",formData.contract_number );
-    data.append('image', uploadImage.image,uploadImage.image.name);
+    data.append("title", formData.title);
+    data.append("contract_number", formData.contract_number);
+    data.append("image", uploadImage.image, uploadImage.image.name);
     data.append("vendor", formData.vendor);
-    data.append("start_date",formData.start_date );
-    data.append("end_date",formData.end_date );
+    data.append("start_date", formData.start_date);
+    data.append("end_date", formData.end_date);
     data.append("duration", formData.duration);
-    data.append("renewble", formData.renewble );
+    data.append("renewble", formData.renewble);
     data.append("renewal_duration", formData.renewal_duration);
     data.append("cost", formData.cost);
-    // data.append("auth_status",formData.auth_status );
-    data.append("type", formData.type );
-    data.append("description",formData.description );
-    data.append("contract_with",formData.contract_with );
+    data.append("type", formData.type);
+    data.append("description", formData.description);
+    data.append("contract_with", formData.contract_with);
     data.append("inputer", userInfo.id);
-    // data.append("authorizor",formData.authorizor );
-    data.append("department",JSON.stringify([2,1]) );
-    console.log({ data ,formData,uploadImage});
+    data.append("department", JSON.stringify([2, 1]));
+    console.log({ data, formData, uploadImage });
 
     await axios.post(
-        `/contracts/up-data/`,data
-        // config
-      )
-      updateFormData(initialFormData)
-      setShow(false)
-      history('/contracts')
+      `/contracts/up-data/`,
+      data
+      // config
+    );
+    updateFormData(initialFormData);
+    setShow(false);
+    navigate("/contracts");
+    window.location.reload(true);
+  };
+  const TableHeadData = [
+    "#",
+    "Title",
+    "Vendor",
+    "Inputer",
+    "State",
+    "End Date",
+    "Actions",
+  ];
+
+  const indexOfLastData = currentPage * dataPerPage;
+  const indexOfFirstData = indexOfLastData - dataPerPage;
+  const currentData = data.slice(indexOfFirstData, indexOfLastData);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
   return (
@@ -116,59 +134,12 @@ function ContractScreen() {
           </Row>
           <Row className='my-2'>
             <Col>
-              <Table bordered hover>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Username</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <th>
-                      <Link to='/home'>First Name</Link>
-                    </th>
-                    <td>Otto</td>
-                    <td>
-                      <Badge bg='success'>Primary</Badge>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>Jacob</td>
-                    <td>Thornton</td>
-                    <td>
-                      <Badge bg='warning'>Primary</Badge>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>Larry the Bird</td>
-                    <td>Larry the Bird</td>
-                    <td>
-                      <Badge bg='info'>Primary</Badge>
-                    </td>
-                    <td className='text-center'>
-                      <Button variant='success' className='action-btn mx-2 p-2'>
-                        <i className='fa-solid fa-check'></i>
-                      </Button>
-                      <Button
-                        variant='danger'
-                        className='action-btn mx-2 p-2'
-                        onClick={() => {
-                          console.log("clickeed");
-                        }}
-                      >
-                        <i className='fa-solid fa-trash-can'></i>
-                      </Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+              <Table headData={TableHeadData} rowData={currentData} />
+              <Pagination
+                dataPerPage={dataPerPage}
+                totalData={data.length}
+                paginate={paginate}
+              />
             </Col>
           </Row>
           <Modal show={show} onHide={handleClose} size='lg'>
@@ -331,10 +302,7 @@ function ContractScreen() {
               </Button>
             </Modal.Footer>
           </Modal>
-          <Card.Text>
-            Some quick example text to build on the card title and make up the
-            bulk of the card's content.
-          </Card.Text>
+          <Card.Text className='text-center'></Card.Text>
         </Card.Body>
       </Card>
     </Aux>

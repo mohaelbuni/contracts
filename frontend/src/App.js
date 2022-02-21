@@ -7,6 +7,7 @@ import LoginScreen from "./screens/LoginScreen"
 // import ReportScreen from "./screens/ReportScreen"
 import HomeScreen from "./screens/HomeScreen"
 import ContractScreen from "./screens/ContractScreen"
+import ContractDetails from "./screens/ContractDetails"
 import ReportScreen from "./screens/ReportScreen.js"
 import Header from "./components/Header"
 import Footer from "./components/Footer"
@@ -23,6 +24,7 @@ function App() {
           <Route path='/' element={<LoginScreen/>} exact />
           <Route path='/home' element={<HomeScreen/>}  />
           <Route path='/contracts' element={<ContractScreen/>}  />
+          <Route path='/contract-details' element={<ContractDetails/>}  />
           <Route path='/reports' element={<ReportScreen/>}  />
 
           {/* <Route path="/branch/:code" element={<BranchHistory />} />

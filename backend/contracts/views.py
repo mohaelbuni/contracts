@@ -27,50 +27,18 @@ def sendEmail(request):
         email.fail_silently=False
         email.send()
         return Response({'send':'success'})
-    
-@api_view(['GET'])
-def getData(request):
-    if request.method == 'GET':
-        contracts = Contract.objects.all()
-        serializer = ContractSerializer(contracts,many=True)
-
-        return Response(serializer.data)
-
-        
-@api_view(['POST'])
-def saveData(request):
-    data=request.POST
-    images = request.FILES['image']
-    print(request.data)
-    if request.method == 'POST':
-        user = User.objects.get(id=data['inputer'])
-        contract = Contract.objects.create(
-            title=data['title'],
-            image=images,
-            vendor=data['vendor'],
-            start_date=data['start_date'],
-            end_date=data['end_date'],
-            duration=data['duration'],
-            renewble=data['renewble'],
-            renewal_duration=data['renewal_duration'],
-            cost=data['cost'],
-            inputer=user,
-            authorizor=None,
-            auth_status=data['auth_status'],
-            type=data['type'],
-            description=data['description'],
-            contract_with=data['contract_with'],
-            )
-        contract.department.set(data['department'])
-        print(contract)
-        contract.save()
-        serializer = ContractSerializer(contract,many=False)
-
-        return Response(serializer.data)
 
 
-class UploadTest(APIView):
+class Contracts(APIView):
 
+    '''Get all contracts'''  
+    def get(self,request):
+        if request.method == 'GET':
+            contracts = Contract.objects.all()
+            serializer = ContractSerializer(contracts,many=True)
+            return Response(serializer.data)
+
+    '''Create a new contract with uploaded image'''
     def post(self,request):
         data=request.data
         images=request.FILES['image']
@@ -81,6 +49,7 @@ class UploadTest(APIView):
         user=User.objects.get(pk=int(data['inputer']))
         contract=Contract.objects.create(
             title=data['title'],
+            contract_number=data['contract_number'],
             image=images,
             vendor=data['vendor'],
             start_date=data['start_date'],
@@ -98,58 +67,24 @@ class UploadTest(APIView):
         contract.save()
         serializer = ContractSerializer(contract,many=False)
         return Response(serializer.data)
-        
- 
-        
-        
-        
-
     
+    """update contract by pk"""
+    def put(self, request, pk, format=None):
+        contract = Contract.objects.filter(pk=pk)
+        print(contract)
+        contract.update(auth_status=True)
+        # contract.save()
+        
+        # serializer = ContractSerializer(contract, data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data)
+        return Response(status=status.HTTP_200_OK)
+
+    '''Delete a contract by pk'''
+    def delete(self, request, pk, format=None):
+        Contract.objects.filter(pk=pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
-    
-    
-# @api_view(['GET'])
-# def get_company(request,code):
-#     if request.method == 'GET':
-#         company = Company.objects.get(code=str(code)) 
-#         otps = OTP.objects.filter(company_code=company.id)
-#         serializer = OTPSerializer(otps, many=True)
-#         return Response(serializer.data)
 
-
-
-# # Get all otp from database
-# # POST create new otp in database
-# @api_view(['GET', 'POST'])
-# def get_OTPs(request):
-#     if request.method == 'GET':
-#         otps = OTP.objects.all()
-#         serializer = OTPSerializer(otps, many=True)
-#         return Response(serializer.data)
-#     if request.method == 'POST':
-#         try:
-#             go = OTP.objects.get(barcode=request.data['barcode'])
-#             return Response({"message": "barcode already exists"},
-#                             status=status.HTTP_403_FORBIDDEN)
-#         except OTP.DoesNotExist:
-#             code = Company.objects.get(code=request.data['company_code'])
-#             data = OTP(barcode=request.data['barcode'],
-#                        recipent_name=request.data['recipent_name'],
-#                        company_code=code)
-#             data.save()
-#             return Response({"save": "success"}, status=status.HTTP_200_OK)
-
-
-# # GET -> search otp by barcode
-
-
-# @api_view(['GET'])
-# def get_OTPByBarcode(request, barcode):
-#     if request.method == 'GET':
-#         try:
-#             obj = OTP.objects.get(barcode=int(barcode))
-#             serializer = OTPSerializer(obj, many=False)
-#             return Response(serializer.data)
-#         except OTP.DoesNotExist:
-#             return Response({'message': 'Barcode does not exist'},
-#                             status.HTTP_404_NOT_FOUND)
+  

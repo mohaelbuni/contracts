@@ -1,14 +1,24 @@
 from rest_framework import serializers
-# from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Contract
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class ContractSerializer(serializers.ModelSerializer):
+    inputer_name = serializers.SerializerMethodField()
     class Meta:
         model = Contract
         fields = ('title','contract_number','image','id','vendor',
                   'start_date','end_date','duration','renewble','renewal_duration','cost',
-                  'auth_status','type','description','contract_with','inputer','authorizor','department')
+                  'auth_status','type','description','contract_with','inputer','inputer_name','authorizor','department')
+
+    def get_inputer_name(self, object):
+        return str(object.inputer)
+
+
+
 
     #     "auth_status": false,
     #     "type": "yearly",
