@@ -13,7 +13,6 @@ function ContractScreen() {
   const handleShow = () => setShow(true);
 
   const navigate = useNavigate();
-
   const initialFormData = Object.freeze({
     title: "",
     contract_number: "",
@@ -22,33 +21,32 @@ function ContractScreen() {
     start_date: "",
     end_date: "",
     duration: "",
-    renewble: false,
+    renewble: "",
     renewal_duration: "",
     cost: "",
-    auth_status: false,
     type: "",
     description: "",
     contract_with: "",
     inputer: "",
-    authorizor: null,
-    department: [],
+
+    department: "",
   });
 
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
   const [formData, updateFormData] = useState(initialFormData);
-  const [uploadImage, setUploadImage] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [uploadImage, setUploadImage] = useState("");
   const [data, setData] = useState([]);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [dataPerPage] = useState(10);
 
   useEffect(() => {
-    async function fetchBranches() {
+    async function fetchData() {
       const { data } = await axios.get("/contracts/up-data/");
       setData(data);
     }
-    fetchBranches();
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -69,35 +67,72 @@ function ContractScreen() {
     }
   };
 
+  const validate = () => {
+    let temp = {};
+    temp.title = formData.title ? "" : "This field is required.";
+    temp.contract_number = Number.isInteger(parseInt(formData.contract_number))
+      ? ""
+      : "This field is required.";
+    temp.vendor = formData.vendor ? "" : "This field is required.";
+    temp.start_date = formData.start_date ? "" : "This field is required.";
+    temp.end_date = formData.end_date ? "" : "This field is required.";
+    temp.duration = Number.isInteger(parseInt(formData.duration))
+      ? ""
+      : "This field is required.";
+    temp.cost = Number.isInteger(parseInt(formData.cost))
+      ? ""
+      : "This field is required.";
+    temp.renewal_duration = Number.isInteger(
+      parseInt(formData.renewal_duration)
+    )
+      ? ""
+      : "This field is required.";
+    temp.contract_with = formData.contract_with
+      ? ""
+      : "This field is required.";
+    temp.type = formData.type ? "" : "This field is required.";
+    temp.image = uploadImage ? "" : "This field is required.";
+
+    setErrors({ ...temp });
+    return Object.values(temp).every((x) => x === "");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let data = new FormData();
-    data.append("title", formData.title);
-    data.append("contract_number", formData.contract_number);
-    data.append("image", uploadImage.image, uploadImage.image.name);
-    data.append("vendor", formData.vendor);
-    data.append("start_date", formData.start_date);
-    data.append("end_date", formData.end_date);
-    data.append("duration", formData.duration);
-    data.append("renewble", formData.renewble);
-    data.append("renewal_duration", formData.renewal_duration);
-    data.append("cost", formData.cost);
-    data.append("type", formData.type);
-    data.append("description", formData.description);
-    data.append("contract_with", formData.contract_with);
-    data.append("inputer", userInfo.id);
-    data.append("department", JSON.stringify([2, 1]));
-    console.log({ data, formData, uploadImage });
+    console.log(formData);
+    console.log(validate());
+    if (validate()) {
+      let data = new FormData();
+      data.append("title", formData.title);
+      data.append("contract_number", formData.contract_number);
+      data.append("image", uploadImage.image, uploadImage.image.name);
+      data.append("vendor", formData.vendor);
+      data.append("start_date", formData.start_date);
+      data.append("end_date", formData.end_date);
+      data.append("duration", formData.duration);
+      data.append("renewble", formData.renewble);
+      data.append("renewal_duration", formData.renewal_duration);
+      data.append("cost", formData.cost);
+      data.append("type", formData.type);
+      data.append("description", formData.description);
+      data.append("contract_with", formData.contract_with);
+      data.append("inputer", userInfo.id);
+      data.append("department", JSON.stringify([2, 1]));
 
-    await axios.post(
-      `/contracts/up-data/`,
-      data
-      // config
-    );
-    updateFormData(initialFormData);
-    setShow(false);
-    navigate("/contracts");
-    window.location.reload(true);
+      const fetchData = async () => {
+        await axios.post(
+          `/contracts/up-data/`,
+          data
+          // config
+        );
+      };
+      fetchData();
+
+      updateFormData(initialFormData);
+      setShow(false);
+      navigate("/contracts");
+      window.location.reload(true);
+    }
   };
   const TableHeadData = [
     "#",
@@ -121,30 +156,89 @@ function ContractScreen() {
     <Aux>
       <Card>
         <Card.Body>
-          <Row>
-            <Col className='text-center pt-3'>
-              <Card.Title>Contracts</Card.Title>
-            </Col>
-            <Col xs={7}></Col>
-            <Col>
-              <Button className='ms-5' onClick={handleShow}>
-                Add Contract
-              </Button>
-            </Col>
-          </Row>
-          <Row className='my-2'>
-            <Col>
-              <Table headData={TableHeadData} rowData={currentData} />
-              <Pagination
-                dataPerPage={dataPerPage}
-                totalData={data.length}
-                paginate={paginate}
-              />
-            </Col>
-          </Row>
+          {userInfo.user_type === "ADMIN" ? (
+            <Aux>
+              <Row>
+                <Col className='text-center pt-3'>
+                  <Card.Title>Contracts</Card.Title>
+                </Col>
+                <Col xs={7}></Col>
+                <Col>
+                  <Button className='ms-5' onClick={handleShow}>
+                    Add Contract
+                  </Button>
+                </Col>
+              </Row>
+              <Row className='my-2'>
+                <Col>
+                  <Table
+                    headData={TableHeadData}
+                    userType={userInfo.user_type}
+                    rowData={currentData}
+                  />
+                  <Pagination
+                    dataPerPage={dataPerPage}
+                    totalData={data.length}
+                    paginate={paginate}
+                  />
+                </Col>
+              </Row>
+            </Aux>
+          ) : userInfo.user_type === "INPUTER" ? (
+            <Aux>
+              <Row>
+                <Col className='text-center pt-3'>
+                  <Card.Title>Contracts</Card.Title>
+                </Col>
+                <Col xs={7}></Col>
+                <Col>
+                  <Button className='ms-5' onClick={handleShow}>
+                    Add Contract
+                  </Button>
+                </Col>
+              </Row>
+              <Row className='my-2'>
+                <Col>
+                  <Table
+                    headData={TableHeadData}
+                    userType={userInfo.user_type}
+                    rowData={currentData}
+                  />
+                  <Pagination
+                    dataPerPage={dataPerPage}
+                    totalData={data.length}
+                    paginate={paginate}
+                  />
+                </Col>
+              </Row>
+            </Aux>
+          ) : (
+            <Aux>
+              <Row>
+                <Col className='text-center pt-3'>
+                  <Card.Title>Contracts</Card.Title>
+                </Col>
+              </Row>
+              <Row className='my-2'>
+                <Col>
+                  <Table
+                    headData={TableHeadData}
+                    userType={userInfo.user_type}
+                    rowData={currentData}
+                  />
+                  <Pagination
+                    dataPerPage={dataPerPage}
+                    totalData={data.length}
+                    paginate={paginate}
+                  />
+                </Col>
+              </Row>
+            </Aux>
+          )}
+
           <Modal show={show} onHide={handleClose} size='lg'>
             <Modal.Header closeButton>
-              <Modal.Title>Modal heading</Modal.Title>
+              <Modal.Title>Add Contract</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <Form>
@@ -152,22 +246,30 @@ function ContractScreen() {
                   <Col>
                     <Form.Group className='mb-3' controlId='titleId'>
                       <Form.Control
+                        isInvalid={errors.title && true}
                         type='text'
                         name='title'
                         placeholder='Title'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        Please choose a Title.
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
 
                   <Col>
                     <Form.Group className='mb-3' controlId='ContractNumber'>
                       <Form.Control
+                        isInvalid={errors.contract_number && true}
                         type='text'
                         name='contract_number'
                         placeholder='Contract Number'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        Contract number is required.
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -175,43 +277,60 @@ function ContractScreen() {
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='Vendor'>
                       <Form.Control
+                        isInvalid={errors.vendor && true}
                         type='text'
                         name='vendor'
                         placeholder='Vendor'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        Vendor is required.
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                   <Col xs={6}>
-                    <input
-                      className='form-control'
-                      accept='image/*'
-                      id='upload-contract-image'
-                      onChange={handleChange}
-                      name='image'
-                      type='file'
-                    />
+                    <Form.Group>
+                      <Form.Control
+                        isInvalid={errors.image && true}
+                        accept='image/*'
+                        id='upload-contract-image'
+                        onChange={handleChange}
+                        name='image'
+                        type='file'
+                      />
+                      <Form.Control.Feedback type='invalid'>
+                        Upload image is required.
+                      </Form.Control.Feedback>
+                    </Form.Group>
                   </Col>
                 </Row>
                 <Row>
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='StartDate'>
                       <Form.Control
+                        isInvalid={errors.start_date && true}
                         type='date'
                         name='start_date'
                         placeholder='Start Date'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        Start Date is required.
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='EndDate'>
                       <Form.Control
+                        isInvalid={errors.end_date && true}
                         type='date'
                         name='end_date'
                         placeholder='End Date'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        End Date is required.
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -220,21 +339,29 @@ function ContractScreen() {
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='Cost'>
                       <Form.Control
+                        isInvalid={errors.cost && true}
                         type='text'
                         name='cost'
                         placeholder='Cost'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        Start Date is integer and required.
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='Duration'>
                       <Form.Control
+                        isInvalid={errors.duration && true}
                         type='text'
                         name='duration'
                         placeholder='Duration'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        duration is integer and required.
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -242,16 +369,21 @@ function ContractScreen() {
                   <Col>
                     <Form.Group className='mb-3' controlId='RenewalDuration'>
                       <Form.Control
+                        isInvalid={errors.renewal_duration && true}
                         type='text'
                         name='renewal_duration'
                         placeholder='Renewal Duration'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        Renewal duration is integer and required.
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                   <Col>
                     <Form.Group className='mb-3' controlId='ContractType'>
                       <Form.Control
+                        isInvalid={errors.type && true}
                         type='text'
                         name='type'
                         placeholder='Contract Type'
@@ -264,11 +396,15 @@ function ContractScreen() {
                   <Col>
                     <Form.Group className='mb-3' controlId='ContractWith'>
                       <Form.Control
+                        isInvalid={errors.contract_with && true}
                         type='text'
                         name='contract_with'
                         placeholder='Contract with'
                         onChange={handleChange}
                       />
+                      <Form.Control.Feedback type='invalid'>
+                        Contract with is required.
+                      </Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group className='mb-3' controlId='formBasicCheckbox'>
                       <Form.Check

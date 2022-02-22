@@ -28,3 +28,6 @@ a {
 .action-btn{
   border-radius: 30%;
 }
+.validation{
+  color:red;
+}

@@ -11,6 +11,7 @@ import ContractDetails from "./screens/ContractDetails"
 import ReportScreen from "./screens/ReportScreen.js"
 import Header from "./components/Header"
 import Footer from "./components/Footer"
+import Users from "./screens/Users"
 // import BranchHistory from "./screens/BranchHistory"
 
 
@@ -26,6 +27,7 @@ function App() {
           <Route path='/contracts' element={<ContractScreen/>}  />
           <Route path='/contract-details' element={<ContractDetails/>}  />
           <Route path='/reports' element={<ReportScreen/>}  />
+          <Route path='/users' element={<Users/>}  />
 
           {/* <Route path="/branch/:code" element={<BranchHistory />} />
           <Route path='/addotp' element={<OTPRegisterationScreen/>}  />

@@ -15,7 +15,8 @@ class User(AbstractUser):
 
     username = models.CharField(_('username'),max_length=100,unique=True)
     user_type = models.CharField(_('User Type'),max_length=15, choices = ApplicationType.choices,default = ApplicationType.INPUTER)
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField(_('email address'), unique=True,null=True,blank=True)
+    is_active = models.BooleanField(default=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
