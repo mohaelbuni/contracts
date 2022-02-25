@@ -54,6 +54,13 @@ def registerUser(request):
     except:
         message = {'details': 'User with this email already exists!'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['PUT'])
+def updateUserType(request):
+        data = request.data
+        user = User.objects.filter(id=int(data['id']))
+        user.update(user_type=data['user_type'])   
+        return Response(status=status.HTTP_200_OK)
 
 
 class Users(APIView):
@@ -64,8 +71,6 @@ class Users(APIView):
             users = User.objects.all()
             serializer = UserSerializer(users,many=True)
             return Response(serializer.data)
-    
-    """update user by pk"""
     def put(self, request, pk, format=None):
         user = User.objects.filter(pk=pk)
         

@@ -30,6 +30,7 @@ def sendEmail(request):
 
 
 class Contracts(APIView):
+    # parser_classes = [MultiPartParser,FormParser]
 
     '''Get all contracts'''  
     def get(self,request):
@@ -40,8 +41,10 @@ class Contracts(APIView):
 
     '''Create a new contract with uploaded image'''
     def post(self,request):
+        print(request)
         data=request.data
-        images=request.FILES['image']
+        pdf=request.FILES['pdf']
+        print(data)
         if data['renewble'] == 'true':
             state = True
         else:
@@ -50,7 +53,7 @@ class Contracts(APIView):
         contract=Contract.objects.create(
             title=data['title'],
             contract_number=data['contract_number'],
-            image=images,
+            pdf=pdf,
             vendor=data['vendor'],
             start_date=data['start_date'],
             end_date=data['end_date'],
@@ -62,8 +65,10 @@ class Contracts(APIView):
             type=data['type'],
             description=data['description'],
             contract_with=data['contract_with'],
+            # department=data['department']
         )
         contract.department.set(json.loads(data['department']))
+        # contract.department.set(data['department'])
         contract.save()
         serializer = ContractSerializer(contract,many=False)
         return Response(serializer.data)
@@ -73,12 +78,6 @@ class Contracts(APIView):
         contract = Contract.objects.filter(pk=pk)
         print(contract)
         contract.update(auth_status=True)
-        # contract.save()
-        
-        # serializer = ContractSerializer(contract, data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response(serializer.data)
         return Response(status=status.HTTP_200_OK)
 
     '''Delete a contract by pk'''

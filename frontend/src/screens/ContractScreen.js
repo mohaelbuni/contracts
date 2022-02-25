@@ -17,7 +17,7 @@ function ContractScreen() {
     title: "",
     contract_number: "",
     vendor: "",
-    image: "",
+    pdf: "",
     start_date: "",
     end_date: "",
     duration: "",
@@ -28,15 +28,14 @@ function ContractScreen() {
     description: "",
     contract_with: "",
     inputer: "",
-
-    department: "",
+    department: '',
   });
 
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
   const [formData, updateFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
-  const [uploadImage, setUploadImage] = useState("");
+  const [uploadPdf, setUploadPdf] = useState('');
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [dataPerPage] = useState(10);
@@ -50,9 +49,9 @@ function ContractScreen() {
   }, []);
 
   const handleChange = (e) => {
-    if ([e.target.name] == "image") {
-      setUploadImage({
-        image: e.target.files[0],
+    if ([e.target.name] == "pdf") {
+      setUploadPdf({
+        pdf: e.target.files[0],
       });
     } else if ([e.target.name] == "renewble") {
       updateFormData({
@@ -67,45 +66,33 @@ function ContractScreen() {
     }
   };
 
-  const validate = () => {
-    let temp = {};
-    temp.title = formData.title ? "" : "This field is required.";
-    temp.contract_number = Number.isInteger(parseInt(formData.contract_number))
-      ? ""
-      : "This field is required.";
-    temp.vendor = formData.vendor ? "" : "This field is required.";
-    temp.start_date = formData.start_date ? "" : "This field is required.";
-    temp.end_date = formData.end_date ? "" : "This field is required.";
-    temp.duration = Number.isInteger(parseInt(formData.duration))
-      ? ""
-      : "This field is required.";
-    temp.cost = Number.isInteger(parseInt(formData.cost))
-      ? ""
-      : "This field is required.";
-    temp.renewal_duration = Number.isInteger(
-      parseInt(formData.renewal_duration)
-    )
-      ? ""
-      : "This field is required.";
-    temp.contract_with = formData.contract_with
-      ? ""
-      : "This field is required.";
-    temp.type = formData.type ? "" : "This field is required.";
-    temp.image = uploadImage ? "" : "This field is required.";
+  const validate=()=>{
+    let temp = {}
+        temp.title= formData.title ? '' : 'This field is required.'
+        temp.contract_number= Number.isInteger(parseInt(formData.contract_number)) ? '' : 'This field is required.'
+        temp.vendor= formData.vendor ? '' : 'This field is required.'
+        temp.start_date= formData.start_date ? '' : 'This field is required.'
+        temp.end_date= formData.end_date ? '' : 'This field is required.'
+        temp.duration= Number.isInteger(parseInt(formData.duration)) ? '' : 'This field is required.'
+        temp.cost= Number.isInteger(parseInt(formData.cost)) ? '' : 'This field is required.'
+        temp.renewal_duration= Number.isInteger(parseInt(formData.renewal_duration)) ? '' : 'This field is required.'
+        temp.contract_with= formData.contract_with ? '' : 'This field is required.'
+        temp.type= formData.type ? '' : 'This field is required.'
+        temp.pdf= uploadPdf ? '' : 'This field accept only pdf files.'
 
-    setErrors({ ...temp });
-    return Object.values(temp).every((x) => x === "");
-  };
+    setErrors({ ...temp})
+    return Object.values(temp).every(x => x === '')
+}
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
-    console.log(validate());
-    if (validate()) {
+    console.log(formData)
+    console.log(validate())
+    if(validate()){
       let data = new FormData();
       data.append("title", formData.title);
       data.append("contract_number", formData.contract_number);
-      data.append("image", uploadImage.image, uploadImage.image.name);
+      data.append("pdf", uploadPdf.pdf, uploadPdf.pdf.name);
       data.append("vendor", formData.vendor);
       data.append("start_date", formData.start_date);
       data.append("end_date", formData.end_date);
@@ -118,21 +105,24 @@ function ContractScreen() {
       data.append("contract_with", formData.contract_with);
       data.append("inputer", userInfo.id);
       data.append("department", JSON.stringify([2, 1]));
-
-      const fetchData = async () => {
+ 
+      const fetchData = async ()=>{
         await axios.post(
           `/contracts/up-data/`,
           data
           // config
         );
-      };
-      fetchData();
+      }
+      fetchData()
 
       updateFormData(initialFormData);
       setShow(false);
       navigate("/contracts");
       window.location.reload(true);
     }
+     
+
+  
   };
   const TableHeadData = [
     "#",
@@ -271,13 +261,14 @@ function ContractScreen() {
                         Contract number is required.
                       </Form.Control.Feedback>
                     </Form.Group>
+                  
                   </Col>
                 </Row>
                 <Row>
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='Vendor'>
                       <Form.Control
-                        isInvalid={errors.vendor && true}
+                      isInvalid={errors.vendor && true}
                         type='text'
                         name='vendor'
                         placeholder='Vendor'
@@ -290,17 +281,17 @@ function ContractScreen() {
                   </Col>
                   <Col xs={6}>
                     <Form.Group>
-                      <Form.Control
-                        isInvalid={errors.image && true}
-                        accept='image/*'
-                        id='upload-contract-image'
-                        onChange={handleChange}
-                        name='image'
-                        type='file'
-                      />
-                      <Form.Control.Feedback type='invalid'>
+                    <Form.Control
+                      isInvalid={errors.pdf && true}
+                      // accept='image/*'
+                      id='upload-contract-pdf'
+                      onChange={handleChange}
+                      name='pdf'
+                      type='file'
+                    />
+                    <Form.Control.Feedback type='invalid'>
                         Upload image is required.
-                      </Form.Control.Feedback>
+                    </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -308,29 +299,29 @@ function ContractScreen() {
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='StartDate'>
                       <Form.Control
-                        isInvalid={errors.start_date && true}
+                      isInvalid={errors.start_date && true}
                         type='date'
                         name='start_date'
                         placeholder='Start Date'
                         onChange={handleChange}
                       />
-                      <Form.Control.Feedback type='invalid'>
+                    <Form.Control.Feedback type='invalid'>
                         Start Date is required.
-                      </Form.Control.Feedback>
+                    </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='EndDate'>
                       <Form.Control
-                        isInvalid={errors.end_date && true}
+                      isInvalid={errors.end_date && true}
                         type='date'
                         name='end_date'
                         placeholder='End Date'
                         onChange={handleChange}
                       />
-                      <Form.Control.Feedback type='invalid'>
+                    <Form.Control.Feedback type='invalid'>
                         End Date is required.
-                      </Form.Control.Feedback>
+                    </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -339,7 +330,7 @@ function ContractScreen() {
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='Cost'>
                       <Form.Control
-                        isInvalid={errors.cost && true}
+                      isInvalid={errors.cost && true}
                         type='text'
                         name='cost'
                         placeholder='Cost'
@@ -347,21 +338,21 @@ function ContractScreen() {
                       />
                       <Form.Control.Feedback type='invalid'>
                         Start Date is integer and required.
-                      </Form.Control.Feedback>
+                    </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                   <Col xs={6}>
                     <Form.Group className='mb-3' controlId='Duration'>
                       <Form.Control
-                        isInvalid={errors.duration && true}
+                      isInvalid={errors.duration && true}
                         type='text'
                         name='duration'
                         placeholder='Duration'
                         onChange={handleChange}
                       />
-                      <Form.Control.Feedback type='invalid'>
+                    <Form.Control.Feedback type='invalid'>
                         duration is integer and required.
-                      </Form.Control.Feedback>
+                    </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                 </Row>
@@ -369,7 +360,7 @@ function ContractScreen() {
                   <Col>
                     <Form.Group className='mb-3' controlId='RenewalDuration'>
                       <Form.Control
-                        isInvalid={errors.renewal_duration && true}
+                      isInvalid={errors.renewal_duration && true}
                         type='text'
                         name='renewal_duration'
                         placeholder='Renewal Duration'
@@ -377,18 +368,19 @@ function ContractScreen() {
                       />
                       <Form.Control.Feedback type='invalid'>
                         Renewal duration is integer and required.
-                      </Form.Control.Feedback>
+                    </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                   <Col>
                     <Form.Group className='mb-3' controlId='ContractType'>
                       <Form.Control
-                        isInvalid={errors.type && true}
+                      isInvalid={errors.type && true}
                         type='text'
                         name='type'
                         placeholder='Contract Type'
                         onChange={handleChange}
                       />
+
                     </Form.Group>
                   </Col>
                 </Row>
@@ -396,15 +388,15 @@ function ContractScreen() {
                   <Col>
                     <Form.Group className='mb-3' controlId='ContractWith'>
                       <Form.Control
-                        isInvalid={errors.contract_with && true}
+                      isInvalid={errors.contract_with && true}
                         type='text'
                         name='contract_with'
                         placeholder='Contract with'
                         onChange={handleChange}
                       />
-                      <Form.Control.Feedback type='invalid'>
+                    <Form.Control.Feedback type='invalid'>
                         Contract with is required.
-                      </Form.Control.Feedback>
+                    </Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group className='mb-3' controlId='formBasicCheckbox'>
                       <Form.Check

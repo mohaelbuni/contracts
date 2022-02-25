@@ -17,7 +17,7 @@ class Department(models.Model):
 class Contract(models.Model):
     title = models.CharField(_('Title'),max_length=150)
     contract_number = models.CharField(_('Contract Number'),max_length=255)
-    image = models.ImageField(_('Image'),upload_to='image/')
+    pdf = models.FileField(_('File'),upload_to='files/')
     vendor = models.CharField(_('Vendor'),max_length=150)
     department = models.ManyToManyField(Department,blank=True)
     start_date = models.DateField(_('Start Date'))

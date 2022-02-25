@@ -10,7 +10,7 @@ class ContractSerializer(serializers.ModelSerializer):
     inputer_name = serializers.SerializerMethodField()
     class Meta:
         model = Contract
-        fields = ('title','contract_number','image','id','vendor',
+        fields = ('title','contract_number','pdf','id','vendor',
                   'start_date','end_date','duration','renewble','renewal_duration','cost',
                   'auth_status','type','description','contract_with','inputer','inputer_name','authorizor','department')
 
